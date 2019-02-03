@@ -1,0 +1,8 @@
+{
+	"commands_array": [],
+	"commands_dict": {
+		"passwords_file": "/home/frappe/passwords.txt",
+		"db_name": "--all-databases",
+		"sql_file_name": "erpnext-backup"
+	}
+}

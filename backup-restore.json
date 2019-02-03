@@ -1,0 +1,26 @@
+{
+	"ERPNext-servers_to_backup": [
+		{
+			"hostname": "[your-server-ip-or-domain-here]",
+			"user": "[your-linux-user]",
+			"password": "[your-linux-password]",
+			"mySSHK": "[your ssh .pub key]",
+			"mySSHK_passphrase": "[your-ssh-private-key-passphrase]",
+			"sites": [
+				"site1.local"
+			],
+			"backup_dir": "/home",
+			"backup_filename": "ERPNext-remote-backup"
+		}
+	],
+	"ERPNext-servers_to_restore": [
+		{
+			"hostname": "[your-server-ip-or-domain-here]",
+			"user": "[your-linux-user]",
+			"password": "[your-linux-password]",
+			"mySSHK": "[your ssh .pub key]",
+			"mySSHK_passphrase": "your-ssh-private-key-passphrase]"
+		},
+		{}
+	]
+}
