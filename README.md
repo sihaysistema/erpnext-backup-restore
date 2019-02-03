@@ -16,7 +16,6 @@ Change the key values appropriately
 Save in the parent directory where you cloned this GitHub repository.
 (This is for security reasons, in case you edit this on your fork, you would not want to push a file with all your credentials, right?)
 
-
 ## Usage:
 
 `python3.6 erpnext-backup.py`
