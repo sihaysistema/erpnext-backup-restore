@@ -3,12 +3,14 @@ import sys
 import os
 import paramiko
 import time
+import datetime
 import json
 from commands import commands_array
 from commands import commands_dict
 from os import path
 from pathlib import Path
 from inspect import currentframe, getframeinfo
+import ftputil
 
 server_json = 'backup-restore.json'
 filename = getframeinfo(currentframe()).filename
@@ -27,15 +29,19 @@ executing = 'Executing: '
 mysql_pass = ''
 mysql_dump = 'mysqldump -u root -p'
 
+# This function opens up the json located on directory above the script.
 def read_server_json():
     with open((os.path.join(onedirup, server_json))) as backup_restore_file:
-        print('file opened')
-        global erpnext_server_data
+        # print('file opened')
+        global backup_data
         global servers
         global how_many_servers
         global server_data
-        erpnext_server_data = json.load(backup_restore_file)
-        servers = erpnext_server_data['ERPNext-servers_to_backup']
+        global local_machine_data
+        backup_data = json.load(backup_restore_file)
+        servers = backup_data['ERPNext_servers_to_backup']
+        local_machine_data = backup_data['Local_machine_data']
+        # print(str(local_dir1))
         how_many_servers = len(servers)
         server_data = servers[0]
 
@@ -44,12 +50,11 @@ def run_server_backups(servers):
     server_count = 1
     for p in servers:
         print('***** Server #' + str(server_count) + ' *****')
-        print('Hostname: ' + p['hostname'])
-        print('User: ' + p['user'])
-        print('Password: ' + p['password'])
-        print('mySSHK: ' + p['mySSHK'])
-        print('mySSHK Passphrase: ' + p['mySSHK_passphrase'])
-        print(nl)
+        print('Hostname: ' + p['hostname'] + nl + 'User: ' + p['user'])
+        #print('Password: ' + p['password'])
+        #print('mySSHK: ' + p['mySSHK'])
+        #print('mySSHK Passphrase: ' + p['mySSHK_passphrase'])
+        #print(nl)
 
         # Open the SSH connection
         ssh = paramiko.SSHClient() # Creates an SSHClient object instance to connect with
@@ -69,7 +74,7 @@ def run_server_backups(servers):
             json_data = json.load(remote_file)
             # print(str(json_data))
             mysql_pass = json_data['mysql_root_password']
-            print(mysql_pass)
+            # print(mysql_pass)
             remote_file.close()
         finally:
             remote_file.close()
@@ -88,7 +93,7 @@ def run_server_backups(servers):
                 result = str(line, 'utf-8')
                 db_json = json.loads(result)
                 print(str(db_json['mysql_root_password']))
-            message = 'Database password successfully obtained'
+            message = 'Database password successfully obtained: ' + str(mysql_pass)
         else:
             message = "Error obtaining database user and password"
             print(message)
@@ -98,9 +103,38 @@ def run_server_backups(servers):
 
 print(header1 + spc + title + spc + header1)
 
+def backup_remote_files():
+    pass
+
+# Downloads Database using scp
+def download_db():
+    global local_dir
+    global remote_file_path
+    local_dir = local_machine_data['local_download_directory']
+    d = datetime.datetime.now()
+    if not os.path.exists(local_dir):
+        os.mkdir (local_dir)
+        # print(str(d))
+        download_file_path = os.path.join(local_dir,hostname.replace(".", "_") + '-' + ('%s-%s'%(d.strftime('%Y-%m-%d-%H-%M'),str(server_data['backup_filename'] + sql))))
+        print('Will be downloading this file: ' + remote_file_path + ' to ' + str(download_file_path))
+        dirnameis = 'Local path does not exist, creating the directory:' + str(local_dir)
+        # FIXME  TODO
+        # FIXME TODO
+    else:
+        dirnameis = 'Directory exists, using existing directory'
+        # download_file_path = 'perrito'
+        download_file_path = os.path.join(local_dir,hostname.replace(".", "_") + '-' + ('%s-%s'%(d.strftime('%Y-%m-%d-%H-%M'),str(server_data['backup_filename'] + sql))))
+        remote_file_path = str(server_data['backup_dir']) + fwd + str(server_data['backup_filename']) + sql
+        print('Will be downloading this file: ' + remote_file_path + ' to ' + str(download_file_path))
+        # ftputil.FTPHost(hostname, user, password) FIXME
+        # FIXME
+        # FIXME
+    return dirnameis
+
+# RUN Everything
 try:
     read_server_json()
-    # print(str(erpnext_server_data))
+    # print(str(backup_data))
     # Setup the connection credentials before connection
     hostname = server_data['hostname']
     user = server_data['user']
@@ -114,10 +148,12 @@ try:
         print(header1 + spc + str(how_many_servers) + spc + one_stb + spc + header1)
     else:
         print(header1 + spc + str(how_many_servers) + spc + many_stb + spc + header1)
-    result = run_server_backups(servers)
-    print(str(result))
+    server_backup_result = run_server_backups(servers)
+    db_download_result = download_db()
+    print(str(server_backup_result))
+    print(str(db_download_result))
 except:
-    print('Something failed, could not execute remote server database backup')
+    print('Something failed, could not execute remote server database backup. Check individual functions, json file  for answers.')
 finally:
     print('SQL Backup Process Completed')
 
