@@ -12,5 +12,6 @@ with open(str(commands_json)) as commands:
     json_dict = json_data['commands_dict']
     # print(str(array))
     # print(str(json_dict))
+    # we leave these variables available for use with our program
     commands_array = array
     commands_dict = json_dict
